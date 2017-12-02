@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { isSameKey, normalizeKeyName } from './util'
 import KeyDisplay from './KeyDisplay'
 
 const Centered = styled.div`
@@ -13,6 +14,16 @@ const Centered = styled.div`
 const CenteredText = styled.span`
   text-align: center;
 `
+
+const IGNORE_KEYS = [
+  'control',
+  'alt',
+  'shift',
+  'meta',
+  'audiovolumeup',
+  'audiovolumedown',
+  'audiovolumemute',
+]
 
 export default class MappingEditor extends React.Component {
   static propTypes = {
@@ -31,7 +42,6 @@ export default class MappingEditor extends React.Component {
     this.state = {
       key: props.keyToMap,
       action: null,
-      keys: {},
     }
   }
 
@@ -45,7 +55,11 @@ export default class MappingEditor extends React.Component {
 
   initMode = () => {
     document.removeEventListener('keydown', this.setKey)
-    if (this.state.key && this.state.action) {
+    if (
+      this.state.key &&
+      this.state.action &&
+      !isSameKey(this.state.key, this.state.action)
+    ) {
       this.props.onComplete(this.state.key, this.state.action)
     } else {
       this.listenForKey()
@@ -58,9 +72,12 @@ export default class MappingEditor extends React.Component {
 
   setKey = e => {
     e.preventDefault()
-    const IGNORE_KEYS = ['Control', 'Alt', 'Shift', 'Meta']
-    if (!IGNORE_KEYS.includes(e.key)) {
-      const { key, ctrlKey, altKey, metaKey, shiftKey } = e
+    if (!IGNORE_KEYS.includes(e.key.toLowerCase())) {
+      const key = normalizeKeyName(e.key)
+      const ctrlKey = e.ctrlKey
+      const altKey = e.altKey
+      const metaKey = e.metaKey
+      const shiftKey = e.shiftKey
       const keyData = { key, ctrlKey, altKey, metaKey, shiftKey }
       if (!this.state.key) {
         this.setState({ key: keyData })
@@ -78,6 +95,7 @@ export default class MappingEditor extends React.Component {
           <CenteredText>Press key (combination) for key</CenteredText>
         ) : (
           <CenteredText>
+            {action && <p>You cannot map a key combination to itself!</p>}
             Press key (combination) to trigger for <KeyDisplay>{key}</KeyDisplay>
           </CenteredText>
         )}

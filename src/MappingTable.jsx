@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import KeyDisplay from './KeyDisplay'
+import KeyDisplay, { getModifiers } from './KeyDisplay'
 
 export default class MappingTable extends React.Component {
   static propTypes = {
@@ -32,7 +32,7 @@ export default class MappingTable extends React.Component {
         </thead>
         <tbody>
           {this.props.keyMappings.map(([key, action]) => (
-            <tr key={key.key}>
+            <tr key={getRowKey(key)}>
               <td>
                 <KeyDisplay>{key}</KeyDisplay>
               </td>
@@ -51,9 +51,20 @@ export default class MappingTable extends React.Component {
               </td>
             </tr>
           ))}
-          <tr />
+          <tr>
+            <td colSpan={2}>
+              <span className="add-icon-wrapper" onClick={() => this.props.editMapping()}>
+                <i className="add-icon action-icon glyphicon glyphicon-plus-sign" /> Add
+                new mapping
+              </span>
+            </td>
+          </tr>
         </tbody>
       </table>
     )
   }
+}
+
+function getRowKey(key) {
+  return `${getModifiers(key).join('+')}${key.key}`
 }

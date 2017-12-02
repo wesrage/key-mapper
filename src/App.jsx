@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import equals from 'deep-equal'
 import Switch from 'react-toggle-switch'
 import { remote } from 'electron'
 import MappingTable from './MappingTable'
 import MappingEditor from './MappingEditor'
+import { isSameKey, normalizeKey } from './util'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'react-toggle-switch/dist/css/switch.min.css'
 import './app.scss'
@@ -13,6 +13,8 @@ const main = remote.require('./main')
 
 const Wrapper = styled.div`
   height: 100vh;
+  margin: 0 auto;
+  max-width: 700px;
   padding: 0.5em;
 `
 
@@ -27,19 +29,20 @@ export default class App extends React.Component {
     enabled: false,
     editing: false,
     keyMappings: [
-      [{ key: 'ArrowLeft' }, { key: 'r' }],
-      [{ key: 'ArrowRight' }, { key: 'f' }],
-      [{ key: ' ' }, { key: 'p' }],
+      [{ key: 'Left' }, { key: 'r' }],
+      [{ key: 'Right' }, { key: 'f' }],
+      [{ key: 'Space' }, { key: 'p' }],
     ],
   }
 
-  addMapping = (key, action) => {
+  addMapping = (rawKey, action) => {
+    const key = normalizeKey(rawKey)
     this.setState({
       editing: false,
     })
     const existingMappingIndex = this.state.keyMappings.reduce(
       (result, [mappedKey, mappedAction], index) => {
-        if (equals(key, mappedKey)) {
+        if (isSameKey(key, mappedKey)) {
           return index
         }
         return result
@@ -64,18 +67,25 @@ export default class App extends React.Component {
   }
 
   editMapping = key => {
-    if (key !== undefined) {
-      this.setState({ editing: key })
-    } else {
-      this.setState({ editing: true })
-    }
+    this.setState({
+      editing: true,
+      editingKey: key,
+    })
   }
 
-  removeMapping = key => {
+  cancelEditMapping = () => {
+    this.setState({
+      editing: false,
+      editingKey: undefined,
+    })
+  }
+
+  removeMapping = rawKey => {
+    const key = normalizeKey(rawKey)
     this.setState(
       state => ({
         ...state,
-        keyMappings: state.keyMappings.filter(([mappedKey]) => !equals(key, mappedKey)),
+        keyMappings: state.keyMappings.filter(([mappedKey]) => !isSameKey(key, mappedKey)),
       }),
       this.resetHandlers,
     )
@@ -93,7 +103,7 @@ export default class App extends React.Component {
     return (
       <Wrapper>
         {this.state.editing ? (
-          <MappingEditor keyToMap={this.state.editing} onComplete={this.addMapping} />
+          <MappingEditor keyToMap={this.state.editingKey} onComplete={this.addMapping} />
         ) : (
           <div>
             <Status>

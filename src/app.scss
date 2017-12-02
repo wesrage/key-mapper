@@ -1,6 +1,5 @@
 .mapping-table {
   table-layout: fixed;
-  width: 200px;
 
   tr:hover .action-icon-container {
     display: block;
@@ -28,4 +27,12 @@
   .edit-icon:hover {
     color: #08f;
   }
+}
+
+.add-icon-wrapper {
+  cursor: pointer;
+}
+
+.add-icon {
+  color: #080;
 }
