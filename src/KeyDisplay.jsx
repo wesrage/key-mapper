@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import os from 'os'
+import { isMac } from './util'
 
 const KeyText = styled.span`
   background: #eee;
@@ -24,6 +24,7 @@ export default class KeyDisplay extends React.Component {
 
   render() {
     const modifiers = getModifiers(this.props.children)
+    const { key, label } = this.props.children
     return (
       <span>
         {modifiers.map(modifier => (
@@ -31,7 +32,7 @@ export default class KeyDisplay extends React.Component {
             <KeyText>{modifier}</KeyText> +{' '}
           </span>
         ))}
-        <KeyText>{getKeyText(this.props.children.key)}</KeyText>
+        {key ? <KeyText>{getKeyText(key)}</KeyText> : label}
       </span>
     )
   }
@@ -55,7 +56,7 @@ export function getModifiers({ ctrlKey, altKey, shiftKey, metaKey }) {
     result.push('ctrl')
   }
   if (metaKey) {
-    if (os.platform() === 'darwin') {
+    if (isMac()) {
       result.push('⌘')
     } else {
       result.push('⊞')

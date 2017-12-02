@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { isSameKey, normalizeKeyName } from './util'
+import { isSameKey, normalizeKey } from './util'
 import KeyDisplay from './KeyDisplay'
 
 const Centered = styled.div`
@@ -28,12 +28,14 @@ const IGNORE_KEYS = [
 export default class MappingEditor extends React.Component {
   static propTypes = {
     keyToMap: PropTypes.shape({
+      label: PropTypes.string,
       key: PropTypes.string,
       ctrlKey: PropTypes.bool,
       altKey: PropTypes.bool,
       metaKey: PropTypes.bool,
       shiftKey: PropTypes.bool,
     }),
+    onCancel: PropTypes.func,
     onComplete: PropTypes.func,
   }
 
@@ -73,16 +75,16 @@ export default class MappingEditor extends React.Component {
   setKey = e => {
     e.preventDefault()
     if (!IGNORE_KEYS.includes(e.key.toLowerCase())) {
-      const key = normalizeKeyName(e.key)
+      const key = e.key
       const ctrlKey = e.ctrlKey
       const altKey = e.altKey
       const metaKey = e.metaKey
       const shiftKey = e.shiftKey
       const keyData = { key, ctrlKey, altKey, metaKey, shiftKey }
       if (!this.state.key) {
-        this.setState({ key: keyData })
+        this.setState({ key: normalizeKey(keyData) })
       } else {
-        this.setState({ action: keyData })
+        this.setState({ action: normalizeKey(keyData) })
       }
     }
   }
@@ -91,14 +93,19 @@ export default class MappingEditor extends React.Component {
     const { key, action } = this.state
     return (
       <Centered>
-        {!key ? (
-          <CenteredText>Press key (combination) for key</CenteredText>
-        ) : (
-          <CenteredText>
-            {action && <p>You cannot map a key combination to itself!</p>}
-            Press key (combination) to trigger for <KeyDisplay>{key}</KeyDisplay>
-          </CenteredText>
-        )}
+        <CenteredText>
+          {!key ? (
+            <p>Press input key (combination)...</p>
+          ) : (
+            <p>
+              {action && <p>You cannot map a key combination to itself!</p>}
+              Press output key (combination) to trigger for input <KeyDisplay>{key}</KeyDisplay>...
+            </p>
+          )}
+          <div>
+            <button onClick={this.props.onCancel}>Cancel</button>
+          </div>
+        </CenteredText>
       </Centered>
     )
   }

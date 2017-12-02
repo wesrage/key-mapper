@@ -2,15 +2,16 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import Switch from 'react-toggle-switch'
-import { remote } from 'electron'
+import { ipcRenderer, remote } from 'electron'
 import os from 'os'
 import MappingTable, { getRowKey } from './MappingTable'
 import MappingEditor from './MappingEditor'
 import KeyDisplay from './KeyDisplay'
-import { isSameKey, normalizeKey } from './util'
+import { Icon, HoverIcon } from './Icon'
+import { isMac, isSameKey, normalizeKey } from './util'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'react-toggle-switch/dist/css/switch.min.css'
-import './app.scss'
+import './overrides.css'
 const main = remote.require('./main')
 
 const Wrapper = styled.div`
@@ -20,25 +21,74 @@ const Wrapper = styled.div`
   padding: 0.5em;
 `
 
+const GlobalToggleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
+
 const Status = styled.div`
   align-items: center;
   display: flex;
   justify-content: flex-start;
 `
 
+const GlobalToggleLabel = styled.span`
+  margin-right: 0.5em;
+`
+
+const GlobalShortcut = styled.div`
+  align-items: center;
+  display: flex;
+`
+
+const AddIconContainer = styled.div`
+  margin-top: 0.5em;
+`
+
+const AddIconWrapper = styled.span`
+  cursor: pointer;
+
+  &:hover {
+    color: #080;
+  }
+`
+
+const GLOBAL_TOGGLE_KEY = 'global toggle'
+
 export default class App extends React.Component {
   state = {
     enabled: false,
     editing: false,
     failedKeys: [],
-    keyMappings: [
-      [{ key: 'Left' }, { key: 'r' }],
-      [{ key: 'Right' }, { key: 'f' }],
-      [{ key: 'Space' }, { key: 'p' }],
-    ],
+    globalToggleKey: {
+      key: 'Escape',
+      ctrlKey: !isMac(),
+      metaKey: isMac(),
+      altKey: true,
+    },
+    keyMappings: [[{ key: 'Left' }, { key: 'r' }], [{ key: 'Right' }, { key: 'f' }]],
+  }
+
+  componentDidMount() {
+    if (this.state.globalToggleKey) {
+      main.registerGlobalKey(this.state.globalToggleKey)
+    }
+    if (this.state.enabled) {
+      main.toggled(true)
+    }
+    ipcRenderer.on('toggle', () => {
+      this.toggleEnabled()
+    })
+  }
+
+  componentWillUnmount() {
+    ipcRenderer.removeAllListeners('toggle')
   }
 
   addMapping = (rawKey, action) => {
+    if (rawKey.label === GLOBAL_TOGGLE_KEY) {
+      return this.changeGlobalToggleKey(action)
+    }
     let statePatch = {
       editing: false,
     }
@@ -75,6 +125,37 @@ export default class App extends React.Component {
       editing: true,
       editingKey: key,
     })
+  }
+
+  editGlobalToggle = key => {
+    this.setState({
+      editing: true,
+      editingKey: {
+        label: GLOBAL_TOGGLE_KEY,
+      },
+    })
+  }
+
+  changeGlobalToggleKey = action => {
+    this.setState(
+      {
+        editing: false,
+        globalToggleKey: action,
+      },
+      () => {
+        const success = main.registerGlobalKey(action)
+        if (!success) {
+          this.setState({
+            failedKeys: [action],
+            globalToggleKey: null,
+          })
+        } else {
+          this.setState({
+            failedKeys: [],
+          })
+        }
+      },
+    )
   }
 
   cancelEditMapping = () => {
@@ -118,7 +199,10 @@ export default class App extends React.Component {
       state => ({
         enabled: !state.enabled,
       }),
-      this.resetHandlers,
+      () => {
+        this.resetHandlers()
+        main.toggled(this.state.enabled)
+      },
     )
   }
 
@@ -126,23 +210,43 @@ export default class App extends React.Component {
     return (
       <Wrapper>
         {this.state.editing ? (
-          <MappingEditor keyToMap={this.state.editingKey} onComplete={this.addMapping} />
+          <MappingEditor
+            keyToMap={this.state.editingKey}
+            onCancel={this.cancelEditMapping}
+            onComplete={this.addMapping}
+          />
         ) : (
           <div>
-            <Status>
-              <Switch onClick={this.toggleEnabled} on={this.state.enabled} />
-              &nbsp;
-              <span>{this.state.enabled ? 'Enabled' : 'Disabled'}</span>
-            </Status>
+            <GlobalToggleRow>
+              <Status>
+                <Switch onClick={this.toggleEnabled} on={this.state.enabled} />
+                &nbsp;
+                <span>{this.state.enabled ? 'Enabled' : 'Disabled'}</span>
+              </Status>
+              <GlobalShortcut>
+                <GlobalToggleLabel>Global Toggle:</GlobalToggleLabel>
+                {this.state.globalToggleKey ? (
+                  <KeyDisplay>{this.state.globalToggleKey}</KeyDisplay>
+                ) : (
+                  <span>None specified</span>
+                )}{' '}
+                <HoverIcon onClick={this.editGlobalToggle} name="pencil" color="#08f" />
+              </GlobalShortcut>
+            </GlobalToggleRow>
             <MappingTable
               addMapping={this.addMapping}
               editMapping={this.editMapping}
               keyMappings={this.state.keyMappings}
               removeMapping={this.removeMapping}
             />
+            <AddIconContainer>
+              <AddIconWrapper onClick={() => this.editMapping()}>
+                <Icon name="plus" color="#080" /> Add new mapping
+              </AddIconWrapper>
+            </AddIconContainer>
             {this.state.failedKeys.map(failedKey => (
               <p key={getRowKey(failedKey)}>
-                <i className="error-icon glyphicon glyphicon-remove-circle" />
+                <Icon name="remove-circle" color="#c00" />
                 Failed to bind shortcut <KeyDisplay>{failedKey}</KeyDisplay>
               </p>
             ))}

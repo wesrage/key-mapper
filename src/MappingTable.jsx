@@ -1,7 +1,27 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { Icon, HoverIcon } from './Icon'
 import KeyDisplay, { getModifiers } from './KeyDisplay'
+
+const ActionIconContainer = styled.div`
+  background: rgba(255, 255, 255, 0.8);
+  display: none;
+  float: right;
+`
+
+const Table = styled.table`
+  table-layout: fixed;
+
+  tr:hover ${ActionIconContainer} {
+    display: block;
+  }
+`
+
+const NoMappingsMessage = styled.p`
+  margin-top: 1em;
+  text-align: center;
+`
 
 export default class MappingTable extends React.Component {
   static propTypes = {
@@ -22,8 +42,8 @@ export default class MappingTable extends React.Component {
   }
 
   render() {
-    return (
-      <table className="table mapping-table">
+    return this.props.keyMappings.length > 0 ? (
+      <Table className="table table-striped">
         <thead>
           <tr>
             <th>From</th>
@@ -38,29 +58,25 @@ export default class MappingTable extends React.Component {
               </td>
               <td>
                 <KeyDisplay>{action}</KeyDisplay>
-                <div className="action-icon-container">
-                  <i
+                <ActionIconContainer>
+                  <HoverIcon
                     onClick={() => this.props.editMapping(key)}
-                    className="edit-icon action-icon glyphicon glyphicon-pencil"
+                    color="#08f"
+                    name="pencil"
                   />
-                  <i
+                  <HoverIcon
                     onClick={() => this.props.removeMapping(key)}
-                    className="remove-icon action-icon glyphicon glyphicon-trash"
+                    color="#c00"
+                    name="trash"
                   />
-                </div>
+                </ActionIconContainer>
               </td>
             </tr>
           ))}
-          <tr>
-            <td colSpan={2}>
-              <span className="add-icon-wrapper" onClick={() => this.props.editMapping()}>
-                <i className="add-icon action-icon glyphicon glyphicon-plus-sign" /> Add
-                new mapping
-              </span>
-            </td>
-          </tr>
         </tbody>
-      </table>
+      </Table>
+    ) : (
+      <NoMappingsMessage>No key mappings</NoMappingsMessage>
     )
   }
 }

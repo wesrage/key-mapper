@@ -3,10 +3,13 @@ var path = require('path')
 module.exports = {
   target: 'electron',
   devtool: 'cheap-module-eval-source-map',
-  entry: './src/index.js',
+  entry: {
+    main: './src/index',
+    hud: './src/hud-index',
+  },
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'renderer.js',
+    filename: '[name].js',
     publicPath: 'dist/',
   },
   module: {
@@ -24,10 +27,6 @@ module.exports = {
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader']
-      },
-      {
-        test: /\.scss$/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
       },
       {
         test: /\.(eot|ttf|woff|woff2|svg)$/,
