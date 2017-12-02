@@ -1,0 +1,31 @@
+.mapping-table {
+  table-layout: fixed;
+  width: 200px;
+
+  tr:hover .action-icon-container {
+    display: block;
+  }
+}
+
+.action-icon-container {
+  background-color: rgba(255, 255, 255, 0.8);
+  display: none;
+  float: right;
+
+  i {
+    cursor: pointer;
+    margin-right: 0.5em;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  .remove-icon:hover {
+    color: #c00;
+  }
+
+  .edit-icon:hover {
+    color: #08f;
+  }
+}
