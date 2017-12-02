@@ -1,39 +1,54 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import querystring from 'querystring'
+import styled from 'styled-components'
 import { ipcRenderer } from 'electron'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './hud-overrides.css'
+
+const Wrapper = styled.div`
+  align-items: center;
+  display: flex;
+  height: 60px;
+`
+
+const StatusLight = styled.div`
+  background: ${props => (props.on ? '#0d0' : '#888')};
+  border-color: ${props => (props.on ? '#0f0' : '#444')};
+  border-radius: 100%;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: ${props => (props.on ? '0 0 30px 10px #afa' : 'none')};
+  display: inline-block;
+  height: 30px;
+  margin: 1em;
+  width: 30px;
+`
 
 export default class Hud extends React.Component {
   state = {
-    enabled: querystring.parse(window.location.search),
+    enabled: false,
   }
 
   componentDidMount() {
-    ipcRenderer.on('on', () => {
-      this.setState({
-        enabled: true,
-      })
+    ipcRenderer.on('hud-toggle-on', () => {
+      this.setState({ enabled: true })
     })
-    ipcRenderer.on('off', () => {
-      this.setState({
-        enabled: false,
-      })
+    ipcRenderer.on('hud-toggle-off', () => {
+      this.setState({ enabled: false })
     })
+  }
+
+  componentWillUnmount() {
+    ipcRenderer.removeAllListeners('hud-toggle-on')
+    ipcRenderer.removeAllListeners('hud-toggle-off')
   }
 
   render() {
     return (
-      <div>
-        <div
-          style={{
-            borderRadius: '100%',
-            width: 30,
-            height: 30,
-            background: this.state.enabled ? '#080' : '#aaa',
-          }}
-        />{' '}
+      <Wrapper>
+        <StatusLight on={this.state.enabled} />{' '}
         <span>Key Mapper {this.state.enabled ? 'Enabled' : 'Disabled'}</span>
-      </div>
+      </Wrapper>
     )
   }
 }

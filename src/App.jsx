@@ -73,11 +73,11 @@ export default class App extends React.Component {
     if (this.state.globalToggleKey) {
       main.registerGlobalKey(this.state.globalToggleKey)
     }
-    if (this.state.enabled) {
-      main.toggled(true)
-    }
+    main.confirmStatus(this.state.enabled)
     ipcRenderer.on('toggle', () => {
-      this.toggleEnabled()
+      this.toggleEnabled().then(enabled => {
+        main.confirmStatus(enabled)
+      })
     })
   }
 
@@ -194,17 +194,18 @@ export default class App extends React.Component {
     }
   }
 
-  toggleEnabled = () => {
-    this.setState(
-      state => ({
-        enabled: !state.enabled,
-      }),
-      () => {
-        this.resetHandlers()
-        main.toggled(this.state.enabled)
-      },
-    )
-  }
+  toggleEnabled = () =>
+    new Promise(resolve => {
+      this.setState(
+        state => ({
+          enabled: !state.enabled,
+        }),
+        () => {
+          this.resetHandlers()
+          resolve(this.state.enabled)
+        },
+      )
+    })
 
   render() {
     return (

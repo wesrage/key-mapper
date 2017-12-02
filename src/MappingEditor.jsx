@@ -55,6 +55,10 @@ export default class MappingEditor extends React.Component {
     this.initMode()
   }
 
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.setKey)
+  }
+
   initMode = () => {
     document.removeEventListener('keydown', this.setKey)
     if (
@@ -97,10 +101,10 @@ export default class MappingEditor extends React.Component {
           {!key ? (
             <p>Press input key (combination)...</p>
           ) : (
-            <p>
+            <div>
               {action && <p>You cannot map a key combination to itself!</p>}
-              Press output key (combination) to trigger for input <KeyDisplay>{key}</KeyDisplay>...
-            </p>
+              <p>Press output key (combination) to trigger for input <KeyDisplay>{key}</KeyDisplay>...</p>
+            </div>
           )}
           <div>
             <button onClick={this.props.onCancel}>Cancel</button>

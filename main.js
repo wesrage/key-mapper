@@ -4,13 +4,14 @@ const app = electron.app
 const ipcMain = electron.ipcMain
 const BrowserWindow = electron.BrowserWindow
 const globalShortcut = electron.globalShortcut
+const Notification = electron.Notification
 
 const path = require('path')
 const url = require('url')
 
 let mainWindow
-let statusHud
-let statusHudTimeout
+let hudWindow
+let hudWindowTimeout
 let globalToggleShortcut
 
 function createWindow() {
@@ -29,6 +30,8 @@ function createWindow() {
   )
   mainWindow.on('closed', function() {
     mainWindow = null
+    hudWindow.close()
+    hudWindow = null
   })
   // mainWindow.setMenu(null)
   createStatusHud()
@@ -36,29 +39,27 @@ function createWindow() {
 
 function createStatusHud() {
   const screenDimensions = electron.screen.getPrimaryDisplay().size;
-  const WINDOW_WIDTH = 150
-  const WINDOW_HEIGHT = 50
-  statusHud = new BrowserWindow({
+  const WINDOW_WIDTH = 210
+  const WINDOW_HEIGHT = 60
+  hudWindow = new BrowserWindow({
     alwaysOnTop: true,
-    closable: false,
     focusable: false,
     frame: false,
     height: WINDOW_HEIGHT,
-    parent: mainWindow,
     skipTaskbar: true,
     transparent: true,
     width: WINDOW_WIDTH,
     x: screenDimensions.width - WINDOW_WIDTH,
-    y: 0,
+    y: 25,
   })
-  statusHud.loadURL(
+  hudWindow.loadURL(
     url.format({
       pathname: path.join(__dirname, 'hud.html'),
       protocol: 'file:',
       slashes: true,
     }),
   )
-  statusHud.hide()
+  hudWindow.hide()
 }
 
 app.on('ready', createWindow)
@@ -119,7 +120,7 @@ function keyToRobotCommand(key, action) {
 }
 
 function registerKeys(keyMappings) {
-  globalShortcut.unregisterAll()
+  unregisterKeys()
   const failedMappings = keyMappings.map(([key, action]) => {
     const electronShortcut = keyToElectronShortcut(key)
     const robotCommand = keyToRobotCommand(key, action)
@@ -143,15 +144,19 @@ function toggleEnabled() {
   mainWindow.webContents.send('toggle')
 }
 
-function toggled(enabled) {
+function confirmStatus(enabled) {
   flashToggleStatus(enabled)
 }
 
-function flashToggleStatus() {
-  clearTimeout(statusHudTimeout)
-  statusHud.show()
-  statusHudTimeout = setTimeout(() => {
-    statusHud.hide()
+function flashToggleStatus(enabled) {
+  new Notification('Title', {
+    body: 'Lorem Ipsum Dolor Sit Amet'
+  })
+  hudWindow.webContents.send(enabled ? 'hud-toggle-on' : 'hud-toggle-off')
+  clearTimeout(hudWindowTimeout)
+  hudWindow.showInactive()
+  hudWindowTimeout = setTimeout(() => {
+    hudWindow.hide()
   }, 2000)
 }
 
@@ -160,4 +165,4 @@ app.on('will-quit', globalShortcut.unregisterAll)
 exports.registerKeys = registerKeys
 exports.registerGlobalKey = registerGlobalKey
 exports.unregisterKeys = unregisterKeys
-exports.toggled = toggled
+exports.confirmStatus = confirmStatus
