@@ -65,6 +65,6 @@ export default class MappingTable extends React.Component {
   }
 }
 
-function getRowKey(key) {
+export function getRowKey(key) {
   return `${getModifiers(key).join('+')}${key.key}`
 }

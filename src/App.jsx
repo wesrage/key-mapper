@@ -3,8 +3,10 @@ import React from 'react'
 import styled from 'styled-components'
 import Switch from 'react-toggle-switch'
 import { remote } from 'electron'
-import MappingTable from './MappingTable'
+import os from 'os'
+import MappingTable, { getRowKey } from './MappingTable'
 import MappingEditor from './MappingEditor'
+import KeyDisplay from './KeyDisplay'
 import { isSameKey, normalizeKey } from './util'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'react-toggle-switch/dist/css/switch.min.css'
@@ -28,6 +30,7 @@ export default class App extends React.Component {
   state = {
     enabled: false,
     editing: false,
+    failedKeys: [],
     keyMappings: [
       [{ key: 'Left' }, { key: 'r' }],
       [{ key: 'Right' }, { key: 'f' }],
@@ -36,10 +39,10 @@ export default class App extends React.Component {
   }
 
   addMapping = (rawKey, action) => {
-    const key = normalizeKey(rawKey)
-    this.setState({
+    let statePatch = {
       editing: false,
-    })
+    }
+    const key = normalizeKey(rawKey)
     const existingMappingIndex = this.state.keyMappings.reduce(
       (result, [mappedKey, mappedAction], index) => {
         if (isSameKey(key, mappedKey)) {
@@ -50,20 +53,21 @@ export default class App extends React.Component {
       -1,
     )
     if (existingMappingIndex === -1) {
-      this.setState(state => ({
-        ...state,
+      statePatch = {
+        ...statePatch,
         keyMappings: [...this.state.keyMappings, [key, action]],
-      }))
+      }
     } else {
-      this.setState(state => ({
-        ...state,
+      statePatch = {
+        ...statePatch,
         keyMappings: [
           ...this.state.keyMappings.slice(0, existingMappingIndex),
           [key, action],
           ...this.state.keyMappings.slice(existingMappingIndex + 1),
         ],
-      }))
+      }
     }
+    this.setState(statePatch, this.resetHandlers)
   }
 
   editMapping = key => {
@@ -84,19 +88,38 @@ export default class App extends React.Component {
     const key = normalizeKey(rawKey)
     this.setState(
       state => ({
-        ...state,
-        keyMappings: state.keyMappings.filter(([mappedKey]) => !isSameKey(key, mappedKey)),
+        keyMappings: state.keyMappings.filter(
+          ([mappedKey]) => !isSameKey(key, mappedKey),
+        ),
       }),
       this.resetHandlers,
     )
   }
 
-  resetHandlers = () => {}
+  resetHandlers = () => {
+    const failedKeys = main.registerKeys(this.state.keyMappings)
+    if (failedKeys.length > 0) {
+      this.setState({
+        failedKeys,
+        keyMappings: this.state.keyMappings.filter(
+          ([mappedKey]) => !failedKeys.some(failedKey => isSameKey(failedKey, mappedKey)),
+        ),
+      })
+    } else {
+      this.setState({ failedKeys: [] })
+    }
+    if (!this.state.enabled) {
+      main.unregisterKeys()
+    }
+  }
 
   toggleEnabled = () => {
-    this.setState(state => ({
-      enabled: !state.enabled,
-    }))
+    this.setState(
+      state => ({
+        enabled: !state.enabled,
+      }),
+      this.resetHandlers,
+    )
   }
 
   render() {
@@ -117,6 +140,12 @@ export default class App extends React.Component {
               keyMappings={this.state.keyMappings}
               removeMapping={this.removeMapping}
             />
+            {this.state.failedKeys.map(failedKey => (
+              <p key={getRowKey(failedKey)}>
+                <i className="error-icon glyphicon glyphicon-remove-circle" />
+                Failed to bind shortcut <KeyDisplay>{failedKey}</KeyDisplay>
+              </p>
+            ))}
           </div>
         )}
       </Wrapper>

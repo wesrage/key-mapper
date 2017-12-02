@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import os from 'os'
 
 const KeyText = styled.span`
   background: #eee;
@@ -54,7 +55,11 @@ export function getModifiers({ ctrlKey, altKey, shiftKey, metaKey }) {
     result.push('ctrl')
   }
   if (metaKey) {
-    result.push('⌘')
+    if (os.platform() === 'darwin') {
+      result.push('⌘')
+    } else {
+      result.push('⊞')
+    }
   }
   if (altKey) {
     result.push('alt')
