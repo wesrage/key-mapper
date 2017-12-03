@@ -6,7 +6,9 @@
   "scripts": {
     "start": "electron .",
     "rebuild": "electron-rebuild --version=1.7.9",
-    "package": "electron-packager . key-mapper --all"
+    "package": "electron-packager . key-mapper",
+    "package-win": "npm run package -- --platform=win32",
+    "package-mac": "npm run package -- --platform=darwin"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
