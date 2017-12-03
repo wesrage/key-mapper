@@ -8,7 +8,7 @@ import './hud-overrides.css'
 const Wrapper = styled.div`
   align-items: center;
   display: flex;
-  height: 60px;
+  height: 50px;
 `
 
 const StatusLight = styled.div`
@@ -17,11 +17,11 @@ const StatusLight = styled.div`
   border-radius: 100%;
   border-style: solid;
   border-width: 1px;
-  box-shadow: ${props => (props.on ? '0 0 30px 10px #afa' : 'none')};
+  box-shadow: ${props => (props.on ? '0 0 20px 10px #afa' : 'none')};
   display: inline-block;
-  height: 30px;
+  height: 20px;
   margin: 1em;
-  width: 30px;
+  width: 20px;
 `
 
 export default class Hud extends React.Component {

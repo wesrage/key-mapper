@@ -40,7 +40,7 @@ function createWindow() {
 function createStatusHud() {
   const screenDimensions = electron.screen.getPrimaryDisplay().size;
   const WINDOW_WIDTH = 210
-  const WINDOW_HEIGHT = 60
+  const WINDOW_HEIGHT = 50
   hudWindow = new BrowserWindow({
     alwaysOnTop: true,
     focusable: false,
