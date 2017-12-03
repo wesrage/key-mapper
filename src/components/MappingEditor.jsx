@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { isSameKey, normalizeKey } from './util'
+import { isSameKey, normalizeKey } from '../util'
 import KeyDisplay from './KeyDisplay'
 
 const Centered = styled.div`

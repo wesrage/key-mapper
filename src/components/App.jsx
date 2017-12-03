@@ -10,10 +10,10 @@ import MappingTable, { getRowKey } from './MappingTable'
 import MappingEditor from './MappingEditor'
 import KeyDisplay from './KeyDisplay'
 import { Icon, HoverIcon } from './Icon'
-import { isMac, isSameKey, normalizeKey } from './util'
+import { isMac, isSameKey, normalizeKey } from '../util'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'react-toggle-switch/dist/css/switch.min.css'
-import './overrides.css'
+import '../css/overrides.css'
 const main = remote.require('./main')
 
 const Wrapper = styled.div`

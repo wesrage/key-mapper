@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { isMac } from './util'
+import { isMac } from '../util'
 
 const KeyText = styled.span`
   background: #eee;
