@@ -33,7 +33,7 @@ function createWindow() {
     hudWindow.close()
     hudWindow = null
   })
-  // mainWindow.setMenu(null)
+  mainWindow.setMenu(null)
   createStatusHud()
 }
 

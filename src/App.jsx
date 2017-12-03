@@ -3,7 +3,9 @@ import React from 'react'
 import styled from 'styled-components'
 import Switch from 'react-toggle-switch'
 import { ipcRenderer, remote } from 'electron'
+import settings from 'electron-settings'
 import os from 'os'
+import equals from 'deep-equal'
 import MappingTable, { getRowKey } from './MappingTable'
 import MappingEditor from './MappingEditor'
 import KeyDisplay from './KeyDisplay'
@@ -18,7 +20,7 @@ const Wrapper = styled.div`
   height: 100vh;
   margin: 0 auto;
   max-width: 700px;
-  padding: 0.5em;
+  padding: 1em;
 `
 
 const GlobalToggleRow = styled.div`
@@ -55,18 +57,32 @@ const AddIconWrapper = styled.span`
 
 const GLOBAL_TOGGLE_KEY = 'global toggle'
 
+const DEFAULT_STATE = {
+  enabled: false,
+  editing: false,
+  failedKeys: [],
+  globalToggleKey: {
+    key: 'Escape',
+    ctrlKey: !isMac(),
+    metaKey: isMac(),
+    altKey: true,
+  },
+  keyMappings: [
+    [{ key: 'Left' }, {key: 'r'}],
+    [{key:'Right'}, {key:'f'}]
+  ],
+}
+
 export default class App extends React.Component {
-  state = {
-    enabled: false,
-    editing: false,
-    failedKeys: [],
-    globalToggleKey: {
-      key: 'Escape',
-      ctrlKey: !isMac(),
-      metaKey: isMac(),
-      altKey: true,
-    },
-    keyMappings: [[{ key: 'Left' }, { key: 'r' }], [{ key: 'Right' }, { key: 'f' }]],
+  constructor(props) {
+    super(props)
+    this.state = { ...DEFAULT_STATE }
+    if (settings.has('globalToggleKey')) {
+      this.state.globalToggleKey = settings.get('globalToggleKey')
+    }
+    if (settings.has('keyMappings')) {
+      this.state.keyMappings = settings.get('keyMappings')
+    }
   }
 
   componentDidMount() {
@@ -79,6 +95,15 @@ export default class App extends React.Component {
         main.confirmStatus(enabled)
       })
     })
+  }
+
+  componentDidUpdate(oldProps, oldState) {
+    if (!isSameKey(oldState.globalToggleKey, this.state.globalToggleKey)) {
+      settings.set('globalToggleKey', this.state.globalToggleKey)
+    }
+    if (!equals(oldState.keyMappings, this.state.keyMappings)) {
+      settings.set('keyMappings', this.state.keyMappings)
+    }
   }
 
   componentWillUnmount() {
