@@ -70,7 +70,7 @@ export default class App extends React.Component {
     super(props)
     this.state = { ...DEFAULT_STATE }
     if (settings.has('globalToggleKey')) {
-      // this.state.globalToggleKey = settings.get('globalToggleKey')
+      this.state.globalToggleKey = settings.get('globalToggleKey')
     }
     if (settings.has('keyMappings')) {
       this.state.keyMappings = settings.get('keyMappings')
