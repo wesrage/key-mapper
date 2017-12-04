@@ -3,7 +3,6 @@ import React from 'react'
 import styled from 'styled-components'
 import { ipcRenderer } from 'electron'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import '../css/hud-overrides.css'
 
 const Wrapper = styled.div`
   align-items: center;
