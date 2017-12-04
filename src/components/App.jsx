@@ -55,22 +55,14 @@ const AddIconWrapper = styled.span`
   }
 `
 
-const GLOBAL_TOGGLE_KEY = 'global toggle'
+export const GLOBAL_TOGGLE_KEY = 'global toggle'
 
 const DEFAULT_STATE = {
   enabled: false,
   editing: false,
   failedKeys: [],
-  globalToggleKey: {
-    key: 'Escape',
-    ctrlKey: !isMac(),
-    metaKey: isMac(),
-    altKey: true,
-  },
-  keyMappings: [
-    [{ key: 'Left' }, {key: 'r'}],
-    [{key:'Right'}, {key:'f'}]
-  ],
+  globalToggleKey: null,
+  keyMappings: [[{ key: 'Left' }, { key: 'r' }], [{ key: 'Right' }, { key: 'f' }]],
 }
 
 export default class App extends React.Component {
@@ -78,7 +70,7 @@ export default class App extends React.Component {
     super(props)
     this.state = { ...DEFAULT_STATE }
     if (settings.has('globalToggleKey')) {
-      this.state.globalToggleKey = settings.get('globalToggleKey')
+      // this.state.globalToggleKey = settings.get('globalToggleKey')
     }
     if (settings.has('keyMappings')) {
       this.state.keyMappings = settings.get('keyMappings')

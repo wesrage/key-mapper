@@ -21,6 +21,8 @@ function normalizeKeyName(keyName) {
 
 export function isSameKey(key1, key2) {
   return (
+    key1 &&
+    key2 &&
     key1.key === key2.key &&
     !!key1.ctrlKey === !!key2.ctrlKey &&
     !!key1.altKey === !!key2.altKey &&
@@ -28,7 +30,6 @@ export function isSameKey(key1, key2) {
     !!key1.shiftKey === !!key2.shiftKey
   )
 }
-
 
 export function isMac() {
   return os.platform() === 'darwin'
