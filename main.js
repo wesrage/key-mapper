@@ -132,7 +132,9 @@ function registerKeys(keyMappings) {
 
 function unregisterKeys() {
   globalShortcut.unregisterAll()
-  return globalShortcut.register(globalToggleShortcut, toggleEnabled)
+  if (globalToggleShortcut) {
+    return globalShortcut.register(globalToggleShortcut, toggleEnabled)
+  }
 }
 
 function registerGlobalKey(key) {
