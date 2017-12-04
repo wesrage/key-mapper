@@ -96,7 +96,7 @@ export default class MappingEditor extends React.Component {
 
   render() {
     const { key, action } = this.state
-    const editingGlobalToggle = key.label === GLOBAL_TOGGLE_KEY
+    const editingGlobalToggle = key && key.label === GLOBAL_TOGGLE_KEY
     return (
       <Centered>
         <CenteredText>
@@ -106,9 +106,12 @@ export default class MappingEditor extends React.Component {
             <div>
               {action && <p>You cannot map a key combination to itself!</p>}
               {editingGlobalToggle ? (
-                 <p>Press input key (combination) for {key.label}...</p>
+                <p>Press input key (combination) for {key.label}...</p>
               ) : (
-                 <p>Press output key (combination) to trigger for input <KeyDisplay>{key}</KeyDisplay>...</p>
+                <p>
+                  Press output key (combination) to trigger for input{' '}
+                  <KeyDisplay>{key}</KeyDisplay>...
+                </p>
               )}
             </div>
           )}
